@@ -1,13 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 using System.Text;
-using System.Threading.Tasks;
+using ImageRepo.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
@@ -17,27 +15,28 @@ namespace ImageRepo.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        private readonly UserContext _context;
-        private readonly IConfiguration _configuration;
+        private IUnitOfWork unitOfWork;
+        private readonly IConfiguration configuration;
 
-        public UserController(UserContext context, IConfiguration configuration)
+        public UserController(IUnitOfWork unitOfWork, IConfiguration configuration)
         {
-            _context = context;
-            _configuration = configuration;
+            this.unitOfWork = unitOfWork;
+            this.configuration = configuration;
         }
 
         [AllowAnonymous]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> GetUsers()
+        public ActionResult<IEnumerable<User>> GetUsers()
         {
-            return await _context.Users.ToListAsync();
+            var users = unitOfWork.Users.GetEntities();
+            return Ok(users);
         }
 
         [AllowAnonymous]
         [HttpGet("{id}")]
-        public async Task<ActionResult<User>> GetUser(string id)
+        public ActionResult<User> GetUser(string id)
         {
-            var user = await _context.Users.FindAsync(id);
+            var user = unitOfWork.Users.GetEntity(id);
 
             if (user == null)
             {
@@ -50,27 +49,22 @@ namespace ImageRepo.Controllers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [AllowAnonymous]
         [HttpPost]
-        public async Task<ActionResult<string>> PostUser(User newUser)
+        public ActionResult<string> PostUser(User newUser)
         {
-            if (UserExists(newUser.Username))
+            if (unitOfWork.Users.Exists(newUser.Username))
             {
                 return Conflict("User Name Already in Use");
             }
 
-            _context.Users.Add(newUser);
-            await _context.SaveChangesAsync();
+            unitOfWork.Users.Create(newUser);
+            unitOfWork.Save();
 
             return GenerateJWT(newUser);
         }
 
-        private bool UserExists(string id)
-        {
-            return _context.Users.Any(e => e.Username == id);
-        }
-
         private string GenerateJWT(User user)
         {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtAuth:Key"]));
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JwtAuth:Key"]));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
             //claim is used to add identity to JWT token
@@ -81,8 +75,8 @@ namespace ImageRepo.Controllers
             };
 
 
-            var token = new JwtSecurityToken(_configuration["JwtAuth:Issuer"],
-              _configuration["JwtAuth:Issuer"],
+            var token = new JwtSecurityToken(configuration["JwtAuth:Issuer"],
+              configuration["JwtAuth:Issuer"],
               claims,
               expires: DateTime.Now.AddMinutes(120),
               signingCredentials: credentials);

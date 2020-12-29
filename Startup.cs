@@ -8,7 +8,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using System.Threading.Tasks;
+using ImageRepo.Entities;
 
 namespace ImageRepo
 {
@@ -24,7 +24,7 @@ namespace ImageRepo
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<UserContext>(opt =>
+            services.AddDbContext<RepositoryContext>(opt =>
                                                opt.UseInMemoryDatabase("User"));
             services.AddControllers();
             services.AddSwaggerGen(c =>
@@ -46,6 +46,7 @@ namespace ImageRepo
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JwtAuth:Key"]))
                 };
             });
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
