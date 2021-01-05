@@ -11,7 +11,7 @@ namespace ImageRepo.Repository
 
         public bool Exists(string username)
         {
-            return repositoryContext.Users.Any(e => e.Username == username);
+            return repositoryContext.Users.Any(e => e.Username.Equals(username));
         }
     }
 }

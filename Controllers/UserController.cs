@@ -11,7 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace ImageRepo.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class UserController : ControllerBase
     {
@@ -24,36 +24,19 @@ namespace ImageRepo.Controllers
             this.configuration = configuration;
         }
 
-        [AllowAnonymous]
-        [HttpGet]
-        public ActionResult<IEnumerable<User>> GetUsers()
-        {
-            var users = unitOfWork.Users.GetEntities();
-            return Ok(users);
-        }
-
-        [AllowAnonymous]
-        [HttpGet("{id}")]
-        public ActionResult<User> GetUser(string id)
-        {
-            var user = unitOfWork.Users.GetEntity(id);
-
-            if (user == null)
-            {
-                return NotFound();
-            }
-
-            return user;
-        }
-
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [AllowAnonymous]
-        [HttpPost]
-        public ActionResult<string> PostUser(User newUser)
+        [HttpPost("Signup")]
+        public ActionResult<string> PostUser([FromForm] User newUser)
         {
+            if (String.IsNullOrEmpty(newUser.Username))
+            {
+                return BadRequest("Username is null or empty");
+            }
+            
             if (unitOfWork.Users.Exists(newUser.Username))
             {
-                return Conflict("User Name Already in Use");
+                return Conflict("Username already in use");
             }
 
             unitOfWork.Users.Create(newUser);
