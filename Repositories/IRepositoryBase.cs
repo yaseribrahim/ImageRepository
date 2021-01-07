@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Linq.Expressions;
 
-namespace ImageRepo.Repository
+namespace ImageRepo.Repositories
 {
     public interface IRepositoryBase<TEntity> where TEntity : class
     {

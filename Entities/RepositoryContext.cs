@@ -7,7 +7,8 @@ namespace ImageRepo.Entities
             : base(options)
         {
         }
-        
+
         public DbSet<User> Users { get; set; }
+        public DbSet<Image> Images { get; set; }
     }
 }

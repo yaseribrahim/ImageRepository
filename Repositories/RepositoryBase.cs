@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 using ImageRepo.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace ImageRepo.Repository
+namespace ImageRepo.Repositories
 {
     public abstract class RepositoryBase<TEntity> : IRepositoryBase<TEntity> where TEntity : class
     {

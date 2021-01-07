@@ -1,7 +1,7 @@
 using System.Linq;
 using ImageRepo.Entities;
 
-namespace ImageRepo.Repository
+namespace ImageRepo.Repositories
 {
     public class UserRepository : RepositoryBase<User>, IUserRepository
     {

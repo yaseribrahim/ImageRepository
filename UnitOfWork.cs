@@ -1,10 +1,11 @@
 using ImageRepo.Entities;
-using ImageRepo.Repository;
+using ImageRepo.Repositories;
 
 public class UnitOfWork : IUnitOfWork
 {
     private readonly RepositoryContext repositoryContext;
     private IUserRepository userRepository;
+    private IImageRepository imageRepository;
     public UnitOfWork(RepositoryContext repositoryContext)
     {
         this.repositoryContext = repositoryContext;
@@ -19,6 +20,18 @@ public class UnitOfWork : IUnitOfWork
                 userRepository = new UserRepository(repositoryContext);
             }
             return userRepository;
+        }
+    }
+
+    public IImageRepository Images
+    {
+        get
+        {
+            if (imageRepository == null)
+            {
+                imageRepository = new ImageRepository(repositoryContext);
+            }
+            return imageRepository;
         }
     }
 

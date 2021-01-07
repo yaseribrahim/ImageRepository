@@ -1,10 +1,12 @@
-using Microsoft.AspNetCore.Http;
+using System.Text.Json.Serialization;
 
 namespace ImageRepo.Entities
 {
     public class Image
     {
+        public string Id { get; set; }
         public string Username { get; set; }
-        public IFormFile File { get; set; }
+        public string Path { get; set; }
+        public bool IsPrivate { get; set; }
     }
 }
