@@ -1,7 +1,10 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using ImageRepo.Entities;
+using ImageRepo.Helpers;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,13 +23,22 @@ namespace ImageRepo.Controllers
             this.webHostEnvironment = webHostEnvironment;
         }
 
+        [Authorize]
         [HttpPost]
         public ActionResult<string> UploadImage([FromForm] Upload upload)
         {
-            if (!unitOfWork.Users.Exists(upload.Username))
+            var username = JWTAuth.GetUsername(HttpContext.User);
+            if (username is null)
+            {
+                return BadRequest("Bearer token doesn't carry username");
+            }
+
+            if (!unitOfWork.Users.Exists(username))
             {
                 return Unauthorized("User does not exist");
             }
+
+            //TODO: abstract writing file to disk
             var allowedExtensions = new List<string>() { ".gif", ".png", ".jpeg", ".jpg" };
             if (!allowedExtensions.Contains(Path.GetExtension(upload.File.FileName)))
             {
@@ -34,15 +46,14 @@ namespace ImageRepo.Controllers
             }
 
             var imageId = Guid.NewGuid().ToString();
-            //TODO: abstract writing file to disk
-            string uploadPath = Path.Combine(webHostEnvironment.WebRootPath, $"{upload.Username}/");
+            string uploadPath = Path.Combine(webHostEnvironment.WebRootPath, $"{username}/");
             if (!Directory.Exists(uploadPath))
             {
                 Directory.CreateDirectory(uploadPath);
             }
             var fileName = imageId + Path.GetExtension(upload.File.FileName);
             var diskFilePath = Path.Combine(uploadPath, fileName);
-            var path = $"/{upload.Username}/" + fileName;
+            var path = $"/{username}/" + fileName;
             using var fileStream = new FileStream(diskFilePath, FileMode.Create);
             try
             {
@@ -50,7 +61,7 @@ namespace ImageRepo.Controllers
                 var image = new Image()
                 {
                     Id = imageId,
-                    Username = upload.Username,
+                    Username = username,
                     Path = path,
                     IsPrivate = upload.IsPrivate
                 };
@@ -67,12 +78,24 @@ namespace ImageRepo.Controllers
         [HttpGet("{username}")]
         public ActionResult<List<Image>> GetImages(string username)
         {
+            string currentUserName = JWTAuth.GetUsername(HttpContext.User);
+
             if (!unitOfWork.Users.Exists(username))
             {
                 return Unauthorized("User does not exist");
             }
 
-            return Ok(unitOfWork.Images.GetEntities(i => i.Username.Equals(username)));
+            IEnumerable images;
+            if (currentUserName == username)
+            {
+                images = unitOfWork.Images.GetEntities(i => i.Username.Equals(username));
+            }
+            else
+            {
+                images = unitOfWork.Images.GetEntities(i => i.Username.Equals(username) && !i.IsPrivate);
+            }
+
+            return Ok(images);
         }
 
         [HttpGet("public")]
