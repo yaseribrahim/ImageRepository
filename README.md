@@ -41,4 +41,6 @@ To make requests with authorization headers
 1. Get JWT by signing up/logging in
 2. Hit Authorize Button and enter token
 
-I wrote a blog post covering the steps needed to make authorized requests using JWT's via Swagger while working on this project. Please check it out [here](https://medium.com/@yaseribrahim/simple-jwt-authentication-with-swagger-for-net-web-api-35595c151c7c).
+# Notes
+
+I wrote a blog post while working on this project: [https://yaseribrahim.medium.com/simple-jwt-authentication-with-swagger-for-net-web-api-35595c151c7c](https://yaseribrahim.medium.com/simple-jwt-authentication-with-swagger-for-net-web-api-35595c151c7c)
