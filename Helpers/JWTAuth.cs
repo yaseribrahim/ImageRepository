@@ -23,6 +23,7 @@ namespace ImageRepo.Helpers
             var token = new JwtSecurityToken(configuration["JwtAuth:Issuer"],
               configuration["JwtAuth:Issuer"],
               claims,
+              expires: DateTime.Now.AddMinutes(120),
               signingCredentials: credentials);
 
             return new JwtSecurityTokenHandler().WriteToken(token);

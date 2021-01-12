@@ -12,19 +12,19 @@ namespace ImageRepo.Controllers
 {
     [Route("[controller]")]
     [ApiController]
-    public class ImageController : ControllerBase
+    public class ImagesController : ControllerBase
     {
         private readonly IUnitOfWork unitOfWork;
         private readonly IWebHostEnvironment webHostEnvironment;
 
-        public ImageController(IUnitOfWork unitOfWork, IWebHostEnvironment webHostEnvironment)
+        public ImagesController(IUnitOfWork unitOfWork, IWebHostEnvironment webHostEnvironment)
         {
             this.unitOfWork = unitOfWork;
             this.webHostEnvironment = webHostEnvironment;
         }
 
         [Authorize]
-        [HttpPost]
+        [HttpPost("image")]
         public ActionResult<string> UploadImage([FromForm] Upload upload)
         {
             var username = JWTAuth.GetUsername(HttpContext.User);
