@@ -1,7 +1,6 @@
 using System;
 using ImageRepo.Entities;
 using ImageRepo.Helpers;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 
@@ -20,10 +19,8 @@ namespace ImageRepo.Controllers
             this.configuration = configuration;
         }
 
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [AllowAnonymous]
-        [HttpPost("Signup")]
-        public ActionResult<string> PostUser([FromForm] User newUser)
+        [HttpPost("signup")]
+        public ActionResult<string> Signup([FromForm] User newUser)
         {
             if (String.IsNullOrEmpty(newUser.Username))
             {
@@ -39,6 +36,22 @@ namespace ImageRepo.Controllers
             unitOfWork.Save();
 
             return JWTAuth.GenerateJWT(newUser.Username, configuration);
+        }
+
+        [HttpPost("login")]
+        public ActionResult<string> Login([FromForm] User user)
+        {
+            if (String.IsNullOrEmpty(user.Username))
+            {
+                return BadRequest("Username is null or empty");
+            }
+
+            if (!unitOfWork.Users.Exists(user.Username))
+            {
+                return NotFound("Username doesn't exist");
+            }
+
+            return JWTAuth.GenerateJWT(user.Username, configuration);
         }
     }
 }
